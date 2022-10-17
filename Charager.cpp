@@ -3,15 +3,14 @@
 #include <cstdlib>
 #include <ctime>
 
-// 1 millisecond = 1000 microsecond
-#define MS 1000
-#define S 1000000
+#define MS 1000 // 1 millisecond = 1000 microsecond
+#define S 1000000 // 1 second = 1000 millisecond
 
-#define WIDTH 40
-#define HEIGHT 15
-#define MV_LEFT 0
-#define MV_DOWN 1
-#define MV_UP 2
+#define WIDTH   40
+#define HEIGHT  20
+#define MV_LEFT  0
+#define MV_DOWN  1
+#define MV_UP    2
 #define MV_RIGHT 3
 
 #define BLOCK_VOID 0
@@ -22,6 +21,10 @@
 #define BLOCK_IRON 5
 #define BLOCK_GOLD 6
 
+char itemsAndBlocksNames[9][12] = { "Void", "Stone", "Small Stone", "Tree", "Small Tree", "Iron", "Gold", "Flower", "Grass" };
+
+unsigned short _map[HEIGHT][WIDTH];
+
 class Player {
 private:
 public:
@@ -31,7 +34,10 @@ public:
   unsigned short lastX = 0;
   unsigned short lastY = 0;
   unsigned short stepSize = 1;
+  unsigned short itemsAndBlocks[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  unsigned short digTimes = 0;
   void move(int direction) {
+    digTimes = 0;
     lastX = x;
     lastY = y;
     switch (direction) {
@@ -51,6 +57,18 @@ public:
       break;
     }
   }
+  void act() {
+    if (_map[x][y] != 0) {
+      digTimes++;
+      if (digTimes == 10) {
+        itemsAndBlocks[_map[x][y]]++;
+        _map[x][y] = 0;
+        digTimes = 0;
+      }
+    } else {
+      // put
+    }
+  }
 };
 
 Player player;
@@ -66,20 +84,21 @@ Player player;
 // white        37         47
 // \033[1;36m{{TEXTS}}\033[0m
 
-void clearScreen() { printf("\033[2J\033[1;1H"); }
+void clearConsole() { printf("\033[2J\033[1;1H"); }
+void clearAfterCursor() { printf("\33[K"); }
+void hideCursor() { printf("\33[?25l"); }
+void showCursor() { printf("\33[?25h"); }
 int randomNumberIn(int min, int max) { return rand() % (max - min + 1) + min; }
 
-unsigned short _map[HEIGHT][WIDTH];
-
 void update() {
-  int generateLv1 = randomNumberIn(0, 60 * 30);
+  int generateLv1 = randomNumberIn(0, 60 * 20);
   if (generateLv1 == 0) {
     unsigned short x = randomNumberIn(0, WIDTH);
     unsigned short y = randomNumberIn(0, HEIGHT);
     unsigned short what = randomNumberIn(1, 4);
     _map[x][y] = _map[x][y] ? _map[x][y] : what;
   }
-  int generateLv2 = randomNumberIn(0, 60 * 40);
+  int generateLv2 = randomNumberIn(0, 60 * 30);
   if (generateLv2 == 0) {
     unsigned short x = randomNumberIn(0, WIDTH);
     unsigned short y = randomNumberIn(0, HEIGHT);
@@ -132,33 +151,43 @@ void renderMap() {
       _temp = _map[j][i];
       switch (_temp) {
       case BLOCK_VOID:
-        printf("\033[1;0m%c\033[0m", transformPoint(_temp));
+        printf("\033[1;0m%c", transformPoint(_temp));
         break;
       case BLOCK_STONE:
       case BLOCK_STONE_SMALL:
       case BLOCK_GOLD:
-        printf("\033[1;33m%c\033[0m", transformPoint(_temp));
+        printf("\033[1;33m%c", transformPoint(_temp));
         break;
       case BLOCK_IRON:
-        printf("\033[1;37m%c\033[0m", transformPoint(_temp));
+        printf("\033[1;37m%c", transformPoint(_temp));
         break;
       case BLOCK_TREE:
       case BLOCK_TREE_SMALL:
-        printf("\033[1;32m%c\033[0m", transformPoint(_temp));
+        printf("\033[1;32m%c", transformPoint(_temp));
       }
+      printf("\033[0m");
     }
     printf("          \n");
   }
 }
+int showed = 0;
 void render() {
   // clearScreen();
-  gotoxy(0, HEIGHT);
   renderMap();
-  printf("{ x: %3d, y: %3d }          \n", player.x, player.y);
+  printf("{ x: %3d, y: %3d }\n", player.x, player.y);
+  showed = 0;
+  for (int i = 0; i < 9; i++) {
+    if (player.itemsAndBlocks[i] == 0) continue;
+    else showed++;
+    printf("%12s: %2d ", itemsAndBlocksNames[i], player.itemsAndBlocks[i]);
+    if (showed % 3 == 0) { printf("\n"); }
+  }
+  printf("          \n");
 }
 
 bool flag = true;
 bool gameLoop() {
+  clearAfterCursor();
   if (kbhit()) {
     char _ = getch();
     switch (_) {
@@ -184,6 +213,10 @@ bool gameLoop() {
       break;
     case 'q':
       flag = false;
+      showCursor();
+      break;
+    case ' ':
+      player.act();
       break;
     default:
       break;
@@ -196,7 +229,8 @@ bool gameLoop() {
 }
 
 int main() {
-  clearScreen();
+  clearConsole();
+  hideCursor();
   srand(time(NULL));
   resetMap();
   while (gameLoop()) {
