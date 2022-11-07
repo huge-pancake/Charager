@@ -6,8 +6,8 @@
 #define MS 1000 // 1 millisecond = 1000 microsecond
 #define S 1000000 // 1 second = 1000 millisecond
 
-#define WIDTH   40
-#define HEIGHT  20
+#define WIDTH   20
+#define HEIGHT  10
 #define MV_LEFT  0
 #define MV_DOWN  1
 #define MV_UP    2
@@ -172,9 +172,9 @@ void renderMap() {
 }
 int showed = 0;
 void render() {
-  // clearScreen();
+  // clearConsole();
   renderMap();
-  printf("{ x: %3d, y: %3d }\n", player.x, player.y);
+  printf("{ x: %3d, y: %3d }          \n", player.x, player.y);
   showed = 0;
   for (int i = 0; i < 9; i++) {
     if (player.itemsAndBlocks[i] == 0) continue;
