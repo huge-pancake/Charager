@@ -231,6 +231,20 @@ bool gameLoop() {
 int main() {
   clearConsole();
   hideCursor();
+  printf(" Moving around:\n");
+  printf("                  w/k\n");
+  printf("               a/h   d/l\n");
+  printf("                  s/j\n");
+  printf("        Acting:\n");
+  printf("    <Space>*10 To break a object.\n");
+  printf("        Others:\n");
+  printf("    q          To quit.\n");
+  printf("    r          To restart the map.\n");
+  printf("\n\n");
+  printf(" >>> PRESS ANY KEY TO START <<<");
+  getch();
+  clearConsole();
+
   srand(time(NULL));
   resetMap();
   while (gameLoop()) {
