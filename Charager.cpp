@@ -29,8 +29,8 @@ class Player {
 private:
 public:
   bool inGame = false;
-  unsigned short x = 0;
-  unsigned short y = 0;
+  unsigned short x = WIDTH / 2;
+  unsigned short y = HEIGHT / 2;
   unsigned short lastX = 0;
   unsigned short lastY = 0;
   unsigned short stepSize = 1;
@@ -121,7 +121,7 @@ void resetMap() {
 char transformPoint(unsigned short pointCode) {
   switch (pointCode) {
   case BLOCK_VOID:
-    return '.';
+    return ' ';
   case BLOCK_STONE:
     return 'S';
   case BLOCK_STONE_SMALL:
